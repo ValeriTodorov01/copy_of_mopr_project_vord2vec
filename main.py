@@ -482,6 +482,8 @@ vectors2 = {
 def distance(point_coords_1, point_coords_2):
     assert point_coords_1 is not None
     assert point_coords_2 is not None
+    assert isinstance(point_coords_1, list)
+    assert isinstance(point_coords_2, list)
     assert len(point_coords_1) == len(point_coords_2)
 
     return math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(point_coords_1, point_coords_2)))
@@ -489,6 +491,8 @@ def distance(point_coords_1, point_coords_2):
 
 def sort_dict(dictionary, index):
     assert dictionary is not None
+    assert isinstance(dictionary, dict)
+    assert isinstance(index, int)
     assert len(dictionary) > 0
     assert len(next(iter(dictionary.values()))) > index
 
@@ -548,6 +552,7 @@ class K_D_Tree:
 
     def build_kd_tree(self, vectors, depth=0, root=None):
         assert vectors is not None
+        assert isinstance(vectors, dict)
 
         # print("\nIn build tree")
         if len(vectors) == 0:
@@ -647,11 +652,18 @@ class K_D_Tree:
         self.best_distance = -1
         return self.find_nearest_vector_recursion(root, given_point)
 
-
     def find_nearest_n_vectors(self, root, given_point, n):
+        assert root is not None
+        assert isinstance(root, Node)
+        assert given_point is not None
+        assert isinstance(given_point, Node)
+        assert n > 0
+        assert isinstance(n, int)
+
         nearest_vector = []
         for i in range(n):
             node_to_append = self.find_nearest_vector(root, given_point)
+            assert node_to_append is not None
             node_to_append.has_not_been_used = False
             nearest_vector.append(node_to_append)
             print("\n\n\n\n")
@@ -660,6 +672,20 @@ class K_D_Tree:
             i.has_not_been_used = True
 
         return nearest_vector
+
+    def find_all_points_in_sphere(self, root, target_word, side):
+        list_of_words_in_sphere = []
+        found_words_counter = 0
+
+        while True:
+            potential_node = self.find_nearest_n_vectors(root, target_word, found_words_counter+1)
+            print("Potential node: " + potential_node[len(potential_node)-1].name + " " + str(distance(potential_node[len(potential_node)-1].coords, target_word.coords)))
+            if distance(potential_node[len(potential_node)-1].coords, target_word.coords) < side:
+                list_of_words_in_sphere.append(potential_node[len(potential_node)-1])
+                found_words_counter += 1
+
+            else:
+                return list_of_words_in_sphere
 
 
 kdtree = K_D_Tree()
@@ -753,6 +779,19 @@ print("\n\nQuery Point:", q_point2.name)
 nearest_node = kdtree.find_nearest_n_vectors(root1, q_point2, 3)
 for i in nearest_node:
     print(i.name)
+
+q_point2 = Node("94", [9, 4])
+
+nearest_node = kdtree.find_nearest_n_vectors(root1, q_point2, 3)
+for i in nearest_node:
+    print(i.name)
+
+target = Node("84", [8, 4])
+
+nodes_in_circle = kdtree.find_all_points_in_sphere(root1, target, 4)
+
+for words in nodes_in_circle:
+    print(words.name)
 
 #nearest_node = kdtree.find_nearest_vector_recursion(root1 , q_point2)
 
